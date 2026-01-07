@@ -5,17 +5,7 @@ import os
 import uuid
 
 app = Flask(__name__)
-CORS(app)
-
-
-# from flask import Flask, request, send_file, jsonify
-# from flask_cors import CORS
-# import yt_dlp
-# import os
-# import uuid
-
-# app = Flask(__name__)
-# CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 DOWNLOADS_DIR = "downloads"
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
@@ -32,43 +22,27 @@ RESOLUTION_MAP = {
     "8k": "bestvideo[height<=4320]+bestaudio/best"
 }
 
-
-
-# @app.route("/download", methods=["POST"])
-# def download():
-#     data = request.json
-#     url = data.get("url")
-#     resolution = data.get("resolution")
-
-# @app.route("/download", methods=["POST"])
-# def download():
-#     data = request.get_json() 
-#     url = data.get("url")
-#     resolution = data.get("resolution")
-
-
 @app.route("/download", methods=["POST"])
 def download():
-    data = request.get_json()
-    url = data.get("url")
-    resolution = data.get("resolution")
-
-
-    if not url:
-        return jsonify({"error": "Missing URL"}), 400
-
-    uid = str(uuid.uuid4())
-    output = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
-
-    ydl_opts = {
-        "format": RESOLUTION_MAP.get(resolution, "best"),
-        "outtmpl": output,
-        "merge_output_format": "mp4",
-        "noplaylist": True,
-        "quiet": True
-    }
-
     try:
+        data = request.get_json(force=True)
+        url = data.get("url")
+        resolution = data.get("resolution")
+
+        if not url:
+            return jsonify({"error": "Missing URL"}), 400
+
+        uid = str(uuid.uuid4())
+        output = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
+
+        ydl_opts = {
+            "format": RESOLUTION_MAP.get(resolution, "best"),
+            "outtmpl": output,
+            "merge_output_format": "mp4",
+            "noplaylist": True,
+            "quiet": True
+        }
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
