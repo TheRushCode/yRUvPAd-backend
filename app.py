@@ -7,6 +7,16 @@ import uuid
 app = Flask(__name__)
 CORS(app)
 
+
+# from flask import Flask, request, send_file, jsonify
+# from flask_cors import CORS
+# import yt_dlp
+# import os
+# import uuid
+
+# app = Flask(__name__)
+# CORS(app)
+
 DOWNLOADS_DIR = "downloads"
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
