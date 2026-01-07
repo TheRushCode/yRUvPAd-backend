@@ -40,13 +40,19 @@ RESOLUTION_MAP = {
 #     url = data.get("url")
 #     resolution = data.get("resolution")
 
+# @app.route("/download", methods=["POST"])
+# def download():
+#     data = request.get_json() 
+#     url = data.get("url")
+#     resolution = data.get("resolution")
 
 
 @app.route("/download", methods=["POST"])
 def download():
-    data = request.get_json() 
+    data = request.get_json()
     url = data.get("url")
     resolution = data.get("resolution")
+
 
     if not url:
         return jsonify({"error": "Missing URL"}), 400
