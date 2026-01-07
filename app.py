@@ -32,9 +32,19 @@ RESOLUTION_MAP = {
     "8k": "bestvideo[height<=4320]+bestaudio/best"
 }
 
+
+
+# @app.route("/download", methods=["POST"])
+# def download():
+#     data = request.json
+#     url = data.get("url")
+#     resolution = data.get("resolution")
+
+
+
 @app.route("/download", methods=["POST"])
 def download():
-    data = request.get_json()
+    data = request.get_json() 
     url = data.get("url")
     resolution = data.get("resolution")
 
