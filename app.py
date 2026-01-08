@@ -33,7 +33,7 @@ def download():
             return jsonify({"error": "Missing URL"}), 400
 
         uid = str(uuid.uuid4())
-        output = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
+        output = os.path.join(DOWNLOADS_DIR, %(title).200s_%(id)s.%(ext)s")
 
         ydl_opts = {
             "format": RESOLUTION_MAP.get(resolution, "best"),
