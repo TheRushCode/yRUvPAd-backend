@@ -22,6 +22,7 @@ RESOLUTION_MAP = {
     "8k": "bestvideo[height<=4320]+bestaudio/best"
 }
 
+
 @app.route("/download", methods=["POST"])
 def download():
     try:
@@ -33,8 +34,7 @@ def download():
             return jsonify({"error": "Missing URL"}), 400
 
         uid = str(uuid.uuid4())
-
-        output = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
+        output_template = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
 
         ydl_opts = {
             "format": RESOLUTION_MAP.get(resolution, "best"),
@@ -47,13 +47,11 @@ def download():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
-        # Find downloaded file
+        # Send downloaded file
         for file in os.listdir(DOWNLOADS_DIR):
             if file.startswith(uid):
-                return send_file(
-                    os.path.join(DOWNLOADS_DIR, file),
-                    as_attachment=True
-                )
+                file_path = os.path.join(DOWNLOADS_DIR, file)
+                return send_file(file_path, as_attachment=True)
 
         return jsonify({"error": "File not found after download"}), 500
 
@@ -63,38 +61,8 @@ def download():
 
 @app.route("/")
 def health():
-    return "Backend running"
+    return "Backend running 🚀"
 
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
-        ydl_opts = {
-            "format": RESOLUTION_MAP.get(resolution, "best"),
-            "outtmpl": output,
-            "merge_output_format": "mp4",
-            "noplaylist": True,
-            "quiet": True
-        }
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-
-        for file in os.listdir(DOWNLOADS_DIR):
-            if file.startswith(uid):
-                return send_file(
-                    os.path.join(DOWNLOADS_DIR, file),
-                    as_attachment=True
-                )
-
-        return jsonify({"error": "File not found"}), 500
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/")
-def health():
-    return "Backend running"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
