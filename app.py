@@ -34,10 +34,7 @@ def download():
 
         uid = str(uuid.uuid4())
 
-        output_template = os.path.join(
-            DOWNLOADS_DIR,
-            f"{uid}_%(title).200s.%(ext)s"
-        )
+        output = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
 
         ydl_opts = {
             "format": RESOLUTION_MAP.get(resolution, "best"),
