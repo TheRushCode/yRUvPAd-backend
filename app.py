@@ -2,7 +2,6 @@ from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
 import yt_dlp
 import os
-import uuid
 
 app = Flask(__name__)
 CORS(app)
@@ -33,20 +32,31 @@ def download():
         if not url:
             return jsonify({"error": "Missing URL"}), 400
 
+<<<<<<< HEAD
         uid = str(uuid.uuid4())
         output_template = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
 
         ydl_opts = {
             "format": RESOLUTION_MAP.get(resolution, "best"),
             "outtmpl": output_template,
+=======
+        ydl_opts = {
+            "format": RESOLUTION_MAP.get(resolution, "best"),
+            "outtmpl": os.path.join(
+                DOWNLOADS_DIR,
+                "%(title).200s_%(id)s.%(ext)s"
+            ),
+>>>>>>> c9f43ec (Use YouTube title as filename and fix download logic)
             "merge_output_format": "mp4",
             "noplaylist": True,
-            "quiet": True
+            "quiet": True,
+            "restrictfilenames": True
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            info = ydl.extract_info(url, download=True)
 
+<<<<<<< HEAD
         # Send downloaded file
         for file in os.listdir(DOWNLOADS_DIR):
             if file.startswith(uid):
@@ -54,6 +64,15 @@ def download():
                 return send_file(file_path, as_attachment=True)
 
         return jsonify({"error": "File not found after download"}), 500
+=======
+            # Get final merged filename
+            file_path = ydl.prepare_filename(info)
+
+            if not file_path.endswith(".mp4"):
+                file_path = os.path.splitext(file_path)[0] + ".mp4"
+
+        return send_file(file_path, as_attachment=True)
+>>>>>>> c9f43ec (Use YouTube title as filename and fix download logic)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
