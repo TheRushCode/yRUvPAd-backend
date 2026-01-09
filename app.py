@@ -2,9 +2,10 @@ from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
 import yt_dlp
 import os
+import uuid
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 DOWNLOADS_DIR = "downloads"
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
@@ -21,68 +22,47 @@ RESOLUTION_MAP = {
     "8k": "bestvideo[height<=4320]+bestaudio/best"
 }
 
-
 @app.route("/download", methods=["POST"])
 def download():
     try:
         data = request.get_json(force=True)
         url = data.get("url")
-        resolution = data.get("resolution", "best")
+        resolution = data.get("resolution")
 
         if not url:
             return jsonify({"error": "Missing URL"}), 400
 
-<<<<<<< HEAD
         uid = str(uuid.uuid4())
-        output_template = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
+        output = os.path.join(DOWNLOADS_DIR, f"{uid}.%(ext)s")
 
         ydl_opts = {
             "format": RESOLUTION_MAP.get(resolution, "best"),
-            "outtmpl": output_template,
-=======
-        ydl_opts = {
-            "format": RESOLUTION_MAP.get(resolution, "best"),
-            "outtmpl": os.path.join(
-                DOWNLOADS_DIR,
-                "%(title).200s_%(id)s.%(ext)s"
-            ),
->>>>>>> c9f43ec (Use YouTube title as filename and fix download logic)
+            "outtmpl": output,
             "merge_output_format": "mp4",
             "noplaylist": True,
-            "quiet": True,
-            "restrictfilenames": True
+            "quiet": True
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
+            ydl.download([url])
 
-<<<<<<< HEAD
-        # Send downloaded file
         for file in os.listdir(DOWNLOADS_DIR):
             if file.startswith(uid):
-                file_path = os.path.join(DOWNLOADS_DIR, file)
-                return send_file(file_path, as_attachment=True)
+                return send_file(
+                    os.path.join(DOWNLOADS_DIR, file),
+                    as_attachment=True
+                )
 
-        return jsonify({"error": "File not found after download"}), 500
-=======
-            # Get final merged filename
-            file_path = ydl.prepare_filename(info)
-
-            if not file_path.endswith(".mp4"):
-                file_path = os.path.splitext(file_path)[0] + ".mp4"
-
-        return send_file(file_path, as_attachment=True)
->>>>>>> c9f43ec (Use YouTube title as filename and fix download logic)
+        return jsonify({"error": "File not found"}), 500
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 @app.route("/")
 def health():
-    return "Backend running 🚀"
-
+    return "Backend running"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
